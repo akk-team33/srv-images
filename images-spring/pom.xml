@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.team33.service.images</groupId>
-        <artifactId>template-root</artifactId>
+        <artifactId>images-root</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>template-fat</artifactId>
+    <artifactId>images-spring</artifactId>
     <packaging>jar</packaging>
 
     <name>Images Microservice - Fat Jar</name>
@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>de.team33.service.images</groupId>
-            <artifactId>template-main</artifactId>
+            <artifactId>images-main</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -52,8 +52,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
-
-                <!-- 🔥 WICHTIG für FAT JAR -->
                 <executions>
                     <execution>
                         <goals>
@@ -62,31 +60,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <archive>
-                                <manifest>
-                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                    <mainClass>de.team33.cmd.template.Main</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptors>
-                                <descriptor>src/main/assembly/fat.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
         </plugins>
     </build>
 </project>

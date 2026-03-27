@@ -9,7 +9,7 @@
     </parent>
 
     <groupId>de.team33.service.images</groupId>
-    <artifactId>template-root</artifactId>
+    <artifactId>images-root</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -47,8 +47,8 @@
     </properties>
 
     <modules>
-        <module>template-main</module>
-        <module>template-fat</module>
+        <module>images-main</module>
+        <module>images-spring</module>
     </modules>
 
     <dependencyManagement>

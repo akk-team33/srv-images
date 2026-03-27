@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>de.team33.service.images</groupId>
-        <artifactId>template-root</artifactId>
+        <artifactId>images-root</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>template-main</artifactId>
+    <artifactId>images-main</artifactId>
     <packaging>jar</packaging>
 
     <name>Images Microservice - Main</name>
