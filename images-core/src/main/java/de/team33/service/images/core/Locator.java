@@ -3,14 +3,14 @@ package de.team33.service.images.core;
 import java.net.URI;
 import java.nio.file.Path;
 
-public class PathMapper {
+public class Locator {
 
     private final Path basePath;
     private final URI relativeUri;
     private final Path resourcePath;
     private final URI serviceUri;
 
-    private PathMapper(final Builder builder) {
+    private Locator(final Builder builder) {
         basePath = builder.basePath;
         relativeUri = relativeUri(builder.resourceUri, builder.baseUri.toString());
         resourcePath = resourcePath(basePath, relativeUri);
@@ -25,7 +25,7 @@ public class PathMapper {
         return Path.of(basePath.toUri().resolve(relativeUri));
     }
 
-    public static Builder mapping(final String controllerRoot, final AliasMap.Entry alias) {
+    public static Builder by(final String controllerRoot, final AliasMap.Entry alias) {
         return new Builder(controllerRoot, alias);
     }
 
@@ -59,8 +59,8 @@ public class PathMapper {
             this.baseUri = URI.create(controllerRoot).resolve(this.alias);
         }
 
-        public final PathMapper build() {
-            return new PathMapper(this);
+        public final Locator build() {
+            return new Locator(this);
         }
 
         public final Builder setResourceUri(final String uri) {

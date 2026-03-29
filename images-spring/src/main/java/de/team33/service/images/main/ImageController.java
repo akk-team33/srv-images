@@ -3,7 +3,7 @@ package de.team33.service.images.main;
 import de.team33.patterns.io.adrastea.FileEntry;
 import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
-import de.team33.service.images.core.PathMapper;
+import de.team33.service.images.core.Locator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -54,31 +54,29 @@ public class ImageController {
     @GetMapping("/{alias}/**")
     public ResponseEntity<?> get(final HttpServletRequest request,
                                  @PathVariable("alias") final String alias) {
-        final PathMapper mapper = PathMapper.mapping(Util.IMAGE_CONTROLLER_ROOT, aliasMap.get(alias))
-                                            .setResourceUri(request.getRequestURI())
-                                            .setRequestUrl(request.getRequestURL().toString())
-                                            .build();
-        final Path resourcePath = mapper.resourcePath();
-        if (!resourcePath.startsWith(mapper.basePath())) {
+        final Locator locator = Locator.by(Util.IMAGE_CONTROLLER_ROOT, aliasMap.get(alias))
+                                       .setResourceUri(request.getRequestURI())
+                                       .setRequestUrl(request.getRequestURL().toString())
+                                       .build();
+        final Path resourcePath = locator.resourcePath();
+        if (!resourcePath.startsWith(locator.basePath())) {
             return ResponseEntity.badRequest().build();
         }
         if (isImage(resourcePath)) {
             return imageResponse(resourcePath);
         }
         if (resourcePath.endsWith("index.json")) {
-            return jsonResponse(resourcePath.getParent(), mapper.basePath(), mapper.serviceUri());
+            return jsonResponse(locator);
         }
         return ResponseEntity.notFound().build();
     }
 
-    private ResponseEntity<String> jsonResponse(final Path indexPath,
-                                                final Path basePath,
-                                                final URI serviceUri) {
-        final FileEntry entry = FileEntry.of(indexPath, LinkHandling.RESOLVE);
+    private ResponseEntity<String> jsonResponse(final Locator locator) {
+        final FileEntry entry = FileEntry.of(locator.resourcePath().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
-            final String target = basePath.toUri().toString();
-            final String replacement = serviceUri.toString();
+            final String target = locator.basePath().toUri().toString();
+            final String replacement = locator.serviceUri().toString();
             final String json = streamer.stream(entry)
                                         .filter(FileEntry::isRegularFile)
                                         .map(FileEntry::path)
