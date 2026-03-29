@@ -87,7 +87,7 @@ public class ImageController {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
             final String target = locator.basePath().toUri().toString();
             final String replacement = locator.serviceUri().toString();
-            final String json = streamer.stream(entry)
+            final String json = streamer.stream(entry) //.parallel()
                                         .filter(FileEntry::isRegularFile)
                                         .map(FileEntry::path)
                                         .filter(ImageController::isImage)

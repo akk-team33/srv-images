@@ -1,5 +1,9 @@
+server:
+  port: 9080
 images:
   entries:
+    - alias: 2002
+      path: /Volumes/andi/Fotos/00-Aufnahme/2002
     - alias: 2025
       path: /Volumes/andi/Fotos/00-Aufnahme/2025
     - alias: 2026
