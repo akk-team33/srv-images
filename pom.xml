@@ -47,7 +47,7 @@
     </properties>
 
     <modules>
-        <module>images-main</module>
+        <module>images-core</module>
         <module>images-spring</module>
     </modules>
 

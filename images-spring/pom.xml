@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>de.team33.service.images</groupId>
-            <artifactId>images-main</artifactId>
+            <artifactId>images-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

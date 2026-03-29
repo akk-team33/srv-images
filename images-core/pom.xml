@@ -10,10 +10,10 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>images-main</artifactId>
+    <artifactId>images-core</artifactId>
     <packaging>jar</packaging>
 
-    <name>Images Microservice - Main</name>
+    <name>Images Microservice - Core</name>
     <description>A microservice that makes images from the filesystem available via http - main module.</description>
 
     <dependencies>
