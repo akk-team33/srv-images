@@ -4,3 +4,5 @@ images:
       path: /Volumes/andi/Fotos/00-Aufnahme/2025
     - alias: 2026
       path: /Volumes/andi/Fotos/00-Aufnahme/2026
+    - alias: Fotos
+      path: /Volumes/andi/Fotos
