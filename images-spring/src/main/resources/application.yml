@@ -10,3 +10,5 @@ images:
       path: /Volumes/andi/Fotos/00-Aufnahme/2026
     - alias: Fotos
       path: /Volumes/andi/Fotos
+  order: PATH
+  direction: ASC

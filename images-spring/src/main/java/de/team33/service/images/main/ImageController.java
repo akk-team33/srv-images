@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
@@ -30,17 +31,19 @@ public class ImageController {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".jpe");
 
     private final AliasMap aliasMap;
+    private final Comparator<FileEntry> order;
 
     public ImageController(ImageProperties properties) {
         this.aliasMap = properties.getEntries().stream()
                                   .map(ImageController::toEntry)
                                   .collect(AliasMap::builder, AliasMap.Builder::put, AliasMap.Builder::putAll)
                                   .build();
+        this.order = properties.getDirection().map(properties.getOrder());
     }
 
-    private static AliasMap.Entry toEntry(final ImageProperties.ImageEntry imageEntry) {
-        return new AliasMap.Entry(imageEntry.getAlias(),
-                                  imageEntry.getPath().toAbsolutePath().normalize());
+    private static AliasMap.Entry toEntry(final ImageProperties.Entry entry) {
+        return new AliasMap.Entry(entry.alias(),
+                                  entry.path().toAbsolutePath().normalize());
     }
 
     private static boolean isImage(final String name) {
@@ -50,6 +53,10 @@ public class ImageController {
 
     private static boolean isImage(final Path path) {
         return isImage(path.getFileName().toString());
+    }
+
+    private static boolean isImage(final FileEntry entry) {
+        return isImage(entry.path());
     }
 
     @GetMapping("/{alias}/**")
@@ -89,8 +96,9 @@ public class ImageController {
             final String replacement = locator.serviceUri().toString();
             final String json = streamer.stream(entry) //.parallel()
                                         .filter(FileEntry::isRegularFile)
-                                        .map(FileEntry::path)
                                         .filter(ImageController::isImage)
+                                        .sorted(order)
+                                        .map(FileEntry::path)
                                         .map(Path::toUri)
                                         .map(URI::toString)
                                         .map(s -> s.replace(target, replacement))
