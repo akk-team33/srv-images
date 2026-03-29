@@ -5,6 +5,7 @@ import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
 import de.team33.service.images.core.Locator;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -68,6 +69,15 @@ public class ImageController {
         if (resourcePath.endsWith("index.json")) {
             return jsonResponse(locator);
         }
+        if (resourcePath.endsWith("show.html")) {
+            return classPathResponse("show.html", MediaType.TEXT_HTML);
+        }
+        if (resourcePath.endsWith("show.js")) {
+            return classPathResponse("show.js", MediaType.valueOf("application/javascript"));
+        }
+        if (resourcePath.endsWith("show.css")) {
+            return classPathResponse("show.css", MediaType.valueOf("text/css"));
+        }
         return ResponseEntity.notFound().build();
     }
 
@@ -104,5 +114,12 @@ public class ImageController {
             }
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private ResponseEntity<Resource> classPathResponse(final String name, final MediaType mediaType) {
+        final ClassPathResource resource = new ClassPathResource(name, ImageController.class);
+        return ResponseEntity.ok()
+                             .contentType(mediaType)
+                             .body(resource);
     }
 }
