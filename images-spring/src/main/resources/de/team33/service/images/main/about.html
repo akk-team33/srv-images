@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Service</title>
+</head>
+<body>
+<h1>Image Service</h1>
+<h2>${project.groupId} - ${project.artifactId}</h2>
+<h3>Version ${project.version}</h3>
+<table>
+    <tr>
+        <td>Product Group:</td>
+        <td>${project.groupId}</td>
+    </tr>
+    <tr>
+        <td>Product Name:</td>
+        <td>${project.artifactId}</td>
+    </tr>
+    <tr>
+        <td>Product Version:</td>
+        <td>${project.version}</td>
+    </tr>
+    <tr>
+        <td>Build Timestamp:</td>
+        <td>${maven.build.timestamp}</td>
+    </tr>
+</table>
+<p>Copyright &copy; ${copyright.year} by Andreas Kluge-Kaindl, Bremen (de)</p>
+</body>
+</html>
