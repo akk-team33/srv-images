@@ -18,7 +18,8 @@ public class Locator {
     }
 
     private static URI relativeUri(final String resourceUri, final String baseUri) {
-        return URI.create(resourceUri.substring(baseUri.length() + 1));
+        final int index = Integer.min(baseUri.length() + 1, resourceUri.length());
+        return URI.create(resourceUri.substring(index));
     }
 
     private static Path resourcePath(final Path basePath, final URI relativeUri) {
@@ -47,16 +48,14 @@ public class Locator {
 
     public static class Builder {
 
-        private final String alias;
         private final Path basePath;
         private final URI baseUri;
         private String resourceUri;
         private String requestUrl;
 
         private Builder(final String controllerRoot, final AliasMap.Entry alias) {
-            this.alias = alias.name();
             this.basePath = alias.path();
-            this.baseUri = URI.create(controllerRoot).resolve(this.alias);
+            this.baseUri = URI.create(controllerRoot).resolve(alias.name());
         }
 
         public final Locator build() {

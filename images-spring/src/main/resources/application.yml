@@ -1,5 +1,5 @@
 server:
-  port: 9080
+  port: 10080
 images:
   entries:
     - alias: 2002
