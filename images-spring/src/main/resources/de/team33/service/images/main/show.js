@@ -41,11 +41,12 @@ fetch(jsonFile)
     })
     .then(data => {
         images = data;
-        if (images.length) showImage(0);
+        showImage(0);
     })
     .catch(err => {
         console.error("Fehler beim Laden der JSON-Datei:", err);
         indexSpan.textContent = "0/0";
+        showImage(0);
         fileSpan.textContent = jsonFile + " (failed)";
     });
 
@@ -66,8 +67,12 @@ function showImage(index) {
         currentIndex = index;
         indexSpan.textContent = (index + 1) + "/" + images.length;
         showImageByURL(images[index]);
-        canvas.focus({ preventScroll: true });
+    } else {
+        currentIndex = 0;
+        indexSpan.textContent = "-/" + images.length;
+        showImageByURL("NOTHING.JPG");
     }
+    canvas.focus({ preventScroll: true });
 }
 
 function showImageByURL(url) {

@@ -89,6 +89,9 @@ public class ImageController {
         if (resourcePath.endsWith("NO.JPG")) {
             return classPathResponse("busy.gif", MediaType.IMAGE_GIF);
         }
+        if (resourcePath.endsWith("NOTHING.JPG")) {
+            return classPathResponse("nothing.jpg", MediaType.IMAGE_JPEG);
+        }
         if (isImage(resourcePath)) {
             return imageResponse(resourcePath);
         }
@@ -111,8 +114,9 @@ public class ImageController {
         final FileEntry entry = FileEntry.of(locator.resourcePath().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
-            final String target = locator.basePath().toUri().toString();
-            final String replacement = locator.serviceUri().toString();
+            // relative ...
+            final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
+            final String replacement = "";                         // absolute: locator.serviceUri().toString();
             final var stage1 = streamer.stream(entry) //.parallel()
                                        .filter(FileEntry::isRegularFile)
                                        .filter(ImageController::isImage);
