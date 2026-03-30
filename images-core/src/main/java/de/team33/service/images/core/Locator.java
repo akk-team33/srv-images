@@ -59,9 +59,9 @@ public class Locator {
         private String resourceUri;
         private String requestUrl;
 
-        private Builder(final String controllerRoot, final AliasMap.Entry alias) {
-            this.basePath = alias.path();
-            this.baseUri = URI.create(controllerRoot).resolve(alias.name());
+        private Builder(final String controllerRoot, final AliasMap.Entry entry) {
+            this.basePath = entry.path();
+            this.baseUri = URI.create(controllerRoot).resolve(entry.alias());
         }
 
         public final Locator build() {

@@ -3,6 +3,7 @@ package de.team33.service.images.main;
 import de.team33.patterns.io.adrastea.FileEntry;
 import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
+import de.team33.service.images.core.Direction;
 import de.team33.service.images.core.Locator;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.System.Logger.Level.INFO;
@@ -35,19 +37,12 @@ public class ImageController {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".jpe");
 
     private final AliasMap aliasMap;
-    private final Comparator<FileEntry> order;
 
     public ImageController(ImageProperties properties) {
         this.aliasMap = properties.getEntries().stream()
-                                  .map(ImageController::toEntry)
+                                  .map(AliasMap.Entry::normalize)
                                   .collect(AliasMap::builder, AliasMap.Builder::put, AliasMap.Builder::putAll)
                                   .build();
-        this.order = properties.getDirection().map(properties.getOrder());
-    }
-
-    private static AliasMap.Entry toEntry(final ImageProperties.Entry entry) {
-        return new AliasMap.Entry(entry.alias(),
-                                  entry.path().toAbsolutePath().normalize());
     }
 
     private static boolean isImage(final String name) {
@@ -75,10 +70,20 @@ public class ImageController {
         return ResponseEntity.badRequest().build();
     }
 
+    private static Comparator<FileEntry> order(final AliasMap.Entry entry) {
+        final Direction direction = Optional.ofNullable(entry.direction())
+                                            .orElse(Direction.ASC);
+        return Optional.ofNullable(entry.order())
+                       .map(direction::map)
+                       .orElse(null);
+    }
+
     @GetMapping("/{alias}/**")
     public ResponseEntity<?> get(final HttpServletRequest request,
                                  @PathVariable("alias") final String alias) {
-        final Locator locator = Locator.by(Util.IMAGE_CONTROLLER_ROOT, aliasMap.get(alias))
+        final AliasMap.Entry entry = aliasMap.get(alias);
+        final Comparator<FileEntry> order = order(entry);
+        final Locator locator = Locator.by(Util.IMAGE_CONTROLLER_ROOT, entry)
                                        .setResourceUri(request.getRequestURI())
                                        .setRequestUrl(request.getRequestURL().toString())
                                        .build();
@@ -96,7 +101,7 @@ public class ImageController {
             return imageResponse(resourcePath);
         }
         if (resourcePath.endsWith("index.json")) {
-            return jsonResponse(locator);
+            return jsonResponse(order, locator);
         }
         if (resourcePath.endsWith("show.html")) {
             return classPathResponse("show.html", MediaType.TEXT_HTML);
@@ -110,7 +115,7 @@ public class ImageController {
         return notFound(locator.requestUri());
     }
 
-    private ResponseEntity<?> jsonResponse(final Locator locator) {
+    private ResponseEntity<?> jsonResponse(final Comparator<FileEntry> order, final Locator locator) {
         final FileEntry entry = FileEntry.of(locator.resourcePath().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);

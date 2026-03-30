@@ -21,10 +21,14 @@ public class AliasMap {
 
     public final Entry get(final String alias) {
         return Optional.ofNullable(backing.get(alias))
-                       .orElseGet(() -> new Entry(alias, Util.noBasePath()));
+                       .orElseGet(() -> new Entry(alias, Util.noBasePath(), null, null));
     }
 
-    public record Entry(String name, Path path) {
+    public record Entry(String alias, Path path, EntryOrder order, Direction direction) {
+
+        public Entry normalize() {
+            return new Entry(alias, path.toAbsolutePath().normalize(), order, direction);
+        }
     }
 
     public static class Builder {
@@ -32,7 +36,7 @@ public class AliasMap {
         private final Map<String, Entry> backing = new TreeMap<>();
 
         public final void put(final Entry entry) {
-            backing.put(entry.name(), entry);
+            backing.put(entry.alias(), entry);
         }
 
         public final void putAll(final AliasMap.Builder other) {
