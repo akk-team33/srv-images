@@ -9,12 +9,14 @@ public class Locator {
     private final URI relativeUri;
     private final Path resourcePath;
     private final URI serviceUri;
+    private final URI requestUri;
 
     private Locator(final Builder builder) {
         basePath = builder.basePath;
         relativeUri = relativeUri(builder.resourceUri, builder.baseUri.toString());
         resourcePath = resourcePath(basePath, relativeUri);
         serviceUri = URI.create(builder.requestUrl.replace(relativeUri.toString(), ""));
+        requestUri = URI.create(builder.requestUrl);
     }
 
     private static URI relativeUri(final String resourceUri, final String baseUri) {
@@ -44,6 +46,10 @@ public class Locator {
 
     public final URI serviceUri() {
         return serviceUri;
+    }
+
+    public final URI requestUri() {
+        return requestUri;
     }
 
     public static class Builder {

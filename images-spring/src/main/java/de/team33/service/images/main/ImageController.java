@@ -4,6 +4,7 @@ import de.team33.patterns.io.adrastea.FileEntry;
 import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
 import de.team33.service.images.core.Locator;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -22,12 +23,15 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Set;
 
+import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
 import static java.util.stream.Collectors.joining;
 
 @RestController
 @RequestMapping(Util.IMAGE_CONTROLLER_ROOT)
 public class ImageController {
 
+    private static final System.Logger LOGGER = System.getLogger(ImageController.class.getCanonicalName());
     private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".jpe");
 
     private final AliasMap aliasMap;
@@ -59,6 +63,18 @@ public class ImageController {
         return isImage(entry.path());
     }
 
+    @Nonnull
+    private static ResponseEntity<?> notFound(final Object location) {
+        LOGGER.log(INFO, () -> "Not Found: " + location);
+        return ResponseEntity.notFound().build();
+    }
+
+    @Nonnull
+    private static ResponseEntity<?> badRequest(final URI uri) {
+        LOGGER.log(WARNING, () -> "Bad Request: " + uri);
+        return ResponseEntity.badRequest().build();
+    }
+
     @GetMapping("/{alias}/**")
     public ResponseEntity<?> get(final HttpServletRequest request,
                                  @PathVariable("alias") final String alias) {
@@ -68,7 +84,10 @@ public class ImageController {
                                        .build();
         final Path resourcePath = locator.resourcePath();
         if (!resourcePath.startsWith(locator.basePath())) {
-            return ResponseEntity.badRequest().build();
+            return badRequest(locator.requestUri());
+        }
+        if (resourcePath.endsWith("NO.JPG")) {
+            return classPathResponse("busy.gif", MediaType.IMAGE_GIF);
         }
         if (isImage(resourcePath)) {
             return imageResponse(resourcePath);
@@ -85,10 +104,10 @@ public class ImageController {
         if (resourcePath.endsWith("show.css")) {
             return classPathResponse("show.css", MediaType.valueOf("text/css"));
         }
-        return ResponseEntity.notFound().build();
+        return notFound(locator.requestUri());
     }
 
-    private ResponseEntity<String> jsonResponse(final Locator locator) {
+    private ResponseEntity<?> jsonResponse(final Locator locator) {
         final FileEntry entry = FileEntry.of(locator.resourcePath().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
@@ -108,10 +127,10 @@ public class ImageController {
                                  .contentType(MediaType.APPLICATION_JSON)
                                  .body(json);
         }
-        return ResponseEntity.notFound().build();
+        return notFound(locator.requestUri());
     }
 
-    private ResponseEntity<Resource> imageResponse(final Path path) {
+    private ResponseEntity<?> imageResponse(final Path path) {
         if (Files.isRegularFile(path)) {
             try {
                 return ResponseEntity.ok()
@@ -121,7 +140,7 @@ public class ImageController {
                 throw new IllegalArgumentException("Illegal path: %s".formatted(path), e);
             }
         }
-        return ResponseEntity.notFound().build();
+        return notFound(path);
     }
 
     private ResponseEntity<Resource> classPathResponse(final String name, final MediaType mediaType) {
