@@ -113,16 +113,17 @@ public class ImageController {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
             final String target = locator.basePath().toUri().toString();
             final String replacement = locator.serviceUri().toString();
-            final String json = streamer.stream(entry) //.parallel()
-                                        .filter(FileEntry::isRegularFile)
-                                        .filter(ImageController::isImage)
-                                        .sorted(order)
-                                        .map(FileEntry::path)
-                                        .map(Path::toUri)
-                                        .map(URI::toString)
-                                        .map(s -> s.replace(target, replacement))
-                                        .map(s -> '"' + s + '"')
-                                        .collect(joining(", ", "[", "]"));
+            final var stage1 = streamer.stream(entry) //.parallel()
+                                       .filter(FileEntry::isRegularFile)
+                                       .filter(ImageController::isImage);
+            final var stage2 = (null == order) ? stage1
+                                               : stage1.sorted(order);
+            final var json = stage2.map(FileEntry::path)
+                                   .map(Path::toUri)
+                                   .map(URI::toString)
+                                   .map(s -> s.replace(target, replacement))
+                                   .map(s -> '"' + s + '"')
+                                   .collect(joining(", ", "[", "]"));
             return ResponseEntity.ok()
                                  .contentType(MediaType.APPLICATION_JSON)
                                  .body(json);
