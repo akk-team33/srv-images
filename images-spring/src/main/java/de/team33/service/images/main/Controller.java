@@ -3,7 +3,6 @@ package de.team33.service.images.main;
 import de.team33.patterns.io.adrastea.FileEntry;
 import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
-import de.team33.service.images.core.Direction;
 import de.team33.service.images.core.Locator;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,14 +21,13 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Optional;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.System.Logger.Level.WARNING;
 import static java.util.stream.Collectors.joining;
 
 @RestController
-@RequestMapping(Util.IMAGE_CONTROLLER_ROOT)
+@RequestMapping(Util.CONTROLLER_ROOT)
 public class Controller {
 
     private static final System.Logger LOGGER = System.getLogger(Controller.class.getCanonicalName());
@@ -55,14 +53,6 @@ public class Controller {
         return ResponseEntity.badRequest().build();
     }
 
-    private static Comparator<FileEntry> order(final AliasMap.Entry entry) {
-        final Direction direction = Optional.ofNullable(entry.direction())
-                                            .orElse(Direction.ASC);
-        return Optional.ofNullable(entry.order())
-                       .map(direction::map)
-                       .orElse(null);
-    }
-
     @GetMapping("/favicon.ico")
     public ResponseEntity<ClassPathResource> favicon() {
         return ResponseEntity.ok()
@@ -73,15 +63,10 @@ public class Controller {
     @GetMapping("/{alias}/**")
     public ResponseEntity<?> get(final HttpServletRequest request,
                                  @PathVariable("alias") final String alias) {
-        final AliasMap.Entry entry = aliasMap.get(alias);
-        final Comparator<FileEntry> order = order(entry);
-        final Locator locator = Locator.by(Util.IMAGE_CONTROLLER_ROOT, entry)
-                                       .setResourceUri(request.getRequestURI())
-                                       .setRequestUrl(request.getRequestURL().toString())
-                                       .build();
-        final Path resourcePath = locator.resourcePath();
-        if (!resourcePath.startsWith(locator.basePath())) {
-            return badRequest(locator.requestUri());
+        final Request rq = new Request(aliasMap, request, alias);
+        final Path resourcePath = rq.locator().resourcePath();
+        if (!resourcePath.startsWith(rq.locator().basePath())) {
+            return badRequest(rq.locator().requestUri());
         }
         if (resourcePath.endsWith("NO.JPG")) {
             return classPathResponse("busy.gif", MediaType.IMAGE_GIF);
@@ -94,7 +79,7 @@ public class Controller {
             return imageResponse(resourcePath, type.mediaType());
         }
         if (resourcePath.endsWith("index.json")) {
-            return jsonResponse(order, locator);
+            return jsonResponse(rq.order(), rq.locator());
         }
         if (resourcePath.endsWith("show.html")) {
             return classPathResponse("show.html", MediaType.TEXT_HTML);
@@ -105,7 +90,7 @@ public class Controller {
         if (resourcePath.endsWith("show.css")) {
             return classPathResponse("show.css", MediaType.valueOf("text/css"));
         }
-        return notFound(locator.requestUri());
+        return notFound(rq.locator().requestUri());
     }
 
     private ResponseEntity<?> jsonResponse(final Comparator<FileEntry> order, final Locator locator) {
