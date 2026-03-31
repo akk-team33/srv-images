@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.Set;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.System.Logger.Level.WARNING;
@@ -34,7 +33,6 @@ import static java.util.stream.Collectors.joining;
 public class Controller {
 
     private static final System.Logger LOGGER = System.getLogger(Controller.class.getCanonicalName());
-    private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".jpe");
 
     private final AliasMap aliasMap;
 
@@ -43,19 +41,6 @@ public class Controller {
                                   .map(AliasMap.Entry::normalize)
                                   .collect(AliasMap::builder, AliasMap.Builder::put, AliasMap.Builder::putAll)
                                   .build();
-    }
-
-    private static boolean isImage(final String name) {
-        final String lowerCase = name.toLowerCase();
-        return IMAGE_EXTENSIONS.stream().anyMatch(lowerCase::endsWith);
-    }
-
-    private static boolean isImage(final Path path) {
-        return isImage(path.getFileName().toString());
-    }
-
-    private static boolean isImage(final FileEntry entry) {
-        return isImage(entry.path());
     }
 
     @Nonnull
@@ -104,8 +89,9 @@ public class Controller {
         if (resourcePath.endsWith("NOTHING.JPG")) {
             return classPathResponse("nothing.jpg", MediaType.IMAGE_JPEG);
         }
-        if (isImage(resourcePath)) {
-            return imageResponse(resourcePath);
+        final ImageType type = ImageType.of(resourcePath);
+        if (null != type) {
+            return imageResponse(resourcePath, type.mediaType());
         }
         if (resourcePath.endsWith("index.json")) {
             return jsonResponse(order, locator);
@@ -131,7 +117,7 @@ public class Controller {
             final String replacement = "";                         // absolute: locator.serviceUri().toString();
             final var stage1 = streamer.stream(entry) //.parallel()
                                        .filter(FileEntry::isRegularFile)
-                                       .filter(Controller::isImage);
+                                       .filter(ImageType::isMatching);
             final var stage2 = (null == order) ? stage1
                                                : stage1.sorted(order);
             final var json = stage2.map(FileEntry::path)
@@ -147,11 +133,11 @@ public class Controller {
         return notFound(locator.requestUri());
     }
 
-    private ResponseEntity<?> imageResponse(final Path path) {
+    private ResponseEntity<?> imageResponse(final Path path, final MediaType mediaType) {
         if (Files.isRegularFile(path)) {
             try {
                 return ResponseEntity.ok()
-                                     .contentType(MediaType.IMAGE_JPEG)
+                                     .contentType(mediaType)
                                      .body(new UrlResource(path.toUri()));
             } catch (final MalformedURLException e) {
                 throw new IllegalArgumentException("Illegal path: %s".formatted(path), e);
