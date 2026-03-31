@@ -31,14 +31,14 @@ import static java.util.stream.Collectors.joining;
 
 @RestController
 @RequestMapping(Util.IMAGE_CONTROLLER_ROOT)
-public class ImageController {
+public class Controller {
 
-    private static final System.Logger LOGGER = System.getLogger(ImageController.class.getCanonicalName());
+    private static final System.Logger LOGGER = System.getLogger(Controller.class.getCanonicalName());
     private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".jpe");
 
     private final AliasMap aliasMap;
 
-    public ImageController(ImageProperties properties) {
+    public Controller(Properties properties) {
         this.aliasMap = properties.getEntries().stream()
                                   .map(AliasMap.Entry::normalize)
                                   .collect(AliasMap::builder, AliasMap.Builder::put, AliasMap.Builder::putAll)
@@ -76,6 +76,13 @@ public class ImageController {
         return Optional.ofNullable(entry.order())
                        .map(direction::map)
                        .orElse(null);
+    }
+
+    @GetMapping("/favicon.ico")
+    public ResponseEntity<ClassPathResource> favicon() {
+        return ResponseEntity.ok()
+                             .contentType(MediaType.IMAGE_PNG)
+                             .body(new ClassPathResource("favicon.png", Controller.class));
     }
 
     @GetMapping("/{alias}/**")
@@ -124,7 +131,7 @@ public class ImageController {
             final String replacement = "";                         // absolute: locator.serviceUri().toString();
             final var stage1 = streamer.stream(entry) //.parallel()
                                        .filter(FileEntry::isRegularFile)
-                                       .filter(ImageController::isImage);
+                                       .filter(Controller::isImage);
             final var stage2 = (null == order) ? stage1
                                                : stage1.sorted(order);
             final var json = stage2.map(FileEntry::path)
@@ -154,7 +161,7 @@ public class ImageController {
     }
 
     private ResponseEntity<Resource> classPathResponse(final String name, final MediaType mediaType) {
-        final ClassPathResource resource = new ClassPathResource(name, ImageController.class);
+        final ClassPathResource resource = new ClassPathResource(name, Controller.class);
         return ResponseEntity.ok()
                              .contentType(mediaType)
                              .body(resource);

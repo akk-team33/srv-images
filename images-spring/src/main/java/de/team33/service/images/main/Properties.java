@@ -9,7 +9,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Configuration
 @ConfigurationProperties(prefix = "images")
-public class ImageProperties {
+public class Properties {
 
     private List<Entry> entries;
 
