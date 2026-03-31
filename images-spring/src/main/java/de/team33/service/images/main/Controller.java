@@ -21,6 +21,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.System.Logger.Level.WARNING;
@@ -54,10 +55,18 @@ public class Controller {
     }
 
     @GetMapping("/favicon.ico")
-    public ResponseEntity<ClassPathResource> favicon() {
-        return ResponseEntity.ok()
-                             .contentType(MediaType.IMAGE_PNG)
-                             .body(new ClassPathResource("favicon.png", Controller.class));
+    public ResponseEntity<?> favicon() {
+        return classPathResponse("favicon.png", MediaType.IMAGE_PNG);
+    }
+
+    @GetMapping("/**/NO.JPG")
+    public ResponseEntity<?> getNoJPG() {
+        return classPathResponse("busy.gif", MediaType.IMAGE_GIF);
+    }
+
+    @GetMapping("/**/NOTHING.JPG")
+    public ResponseEntity<?> getNothingJPG() {
+        return classPathResponse("nothing.jpg", MediaType.IMAGE_JPEG);
     }
 
     @GetMapping("/{alias}/**")
@@ -68,20 +77,8 @@ public class Controller {
         if (!resourcePath.startsWith(rq.locator().basePath())) {
             return badRequest(rq.locator().requestUri());
         }
-        if (resourcePath.endsWith("NO.JPG")) {
-            return classPathResponse("busy.gif", MediaType.IMAGE_GIF);
-        }
-        if (resourcePath.endsWith("NOTHING.JPG")) {
-            return classPathResponse("nothing.jpg", MediaType.IMAGE_JPEG);
-        }
-        final ImageType type = ImageType.of(resourcePath);
-        if (null != type) {
-            return imageResponse(resourcePath, type.mediaType());
-        }
-        if (resourcePath.endsWith("index.json")) {
-            return jsonResponse(rq.order(), rq.locator());
-        }
-        if (resourcePath.endsWith("show.html")) {
+        if (Stream.of("show", "show.htm", "show.html")
+                  .anyMatch(resourcePath::endsWith)) {
             return classPathResponse("show.html", MediaType.TEXT_HTML);
         }
         if (resourcePath.endsWith("show.js")) {
@@ -89,6 +86,13 @@ public class Controller {
         }
         if (resourcePath.endsWith("show.css")) {
             return classPathResponse("show.css", MediaType.valueOf("text/css"));
+        }
+        if (resourcePath.endsWith("index.json")) {
+            return jsonResponse(rq.order(), rq.locator());
+        }
+        final ImageType type = ImageType.of(resourcePath);
+        if (null != type) {
+            return imageResponse(resourcePath, type.mediaType());
         }
         return notFound(rq.locator().requestUri());
     }
