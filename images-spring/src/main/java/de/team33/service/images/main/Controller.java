@@ -72,17 +72,19 @@ public class Controller {
                                            Request::isShowJS,
                                            Request::isShowCSS,
                                            Request::isShowJson,
-                                           Request::isImage);
+                                           Request::isImage)
+                                   .applying(rq -> badRequest(rq.locator().requestUri()),
+                                             rq -> classPathResponse("show.html",
+                                                                     MediaType.TEXT_HTML),
+                                             rq -> classPathResponse("show.js",
+                                                                     MediaType.valueOf("application/javascript")),
+                                             rq -> classPathResponse("show.css",
+                                                                     MediaType.valueOf("text/css")),
+                                             rq -> new RspShowJson(rq).response(),
+                                             rq -> new RspImage(rq).response(),
+                                             rq -> notFound(rq.locator().requestUri()));
         final var rq = new Request(aliasMap, request, alias);
-        return switch (choices.apply(rq)) {
-            case 0 -> badRequest(rq.locator().requestUri());
-            case 1 -> classPathResponse("show.html", MediaType.TEXT_HTML);
-            case 2 -> classPathResponse("show.js", MediaType.valueOf("application/javascript"));
-            case 3 -> classPathResponse("show.css", MediaType.valueOf("text/css"));
-            case 4 -> new ShowJson(rq).response();
-            case 5 -> imageResponse(rq.locator().resourcePath(), rq.imageType().mediaType());
-            default -> notFound(rq.locator().requestUri());
-        };
+        return choices.apply(rq);
     }
 
     private ResponseEntity<?> imageResponse(final Path path, final MediaType mediaType) {

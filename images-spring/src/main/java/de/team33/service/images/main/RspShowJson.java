@@ -12,12 +12,12 @@ import java.util.Comparator;
 
 import static java.util.stream.Collectors.joining;
 
-class ShowJson extends Responder {
+class RspShowJson extends Responder {
 
     private final Locator locator;
     private final Comparator<FileEntry> order;
 
-    ShowJson(final Request request) {
+    RspShowJson(final Request request) {
         super(request);
         locator = request.locator();
         order = request.order();

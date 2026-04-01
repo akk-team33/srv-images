@@ -47,10 +47,6 @@
             <groupId>de.team33.patterns</groupId>
             <artifactId>enums-pan</artifactId>
         </dependency>
-        <dependency>
-            <groupId>de.team33.patterns</groupId>
-            <artifactId>decision-thyone</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
