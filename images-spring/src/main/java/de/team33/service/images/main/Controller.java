@@ -1,9 +1,7 @@
 package de.team33.service.images.main;
 
-import de.team33.patterns.io.adrastea.FileEntry;
-import de.team33.patterns.io.adrastea.LinkHandling;
+import de.team33.patterns.decision.thyone.Choices;
 import de.team33.service.images.core.AliasMap;
-import de.team33.service.images.core.Locator;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
@@ -20,12 +18,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.System.Logger.Level.WARNING;
-import static java.util.stream.Collectors.joining;
 
 @RestController
 @RequestMapping(Util.CONTROLLER_ROOT)
@@ -72,54 +67,22 @@ public class Controller {
     @GetMapping("/{alias}/**")
     public ResponseEntity<?> get(final HttpServletRequest request,
                                  @PathVariable("alias") final String alias) {
-        final Request rq = new Request(aliasMap, request, alias);
-        final Path resourcePath = rq.locator().resourcePath();
-        if (!resourcePath.startsWith(rq.locator().basePath())) {
-            return badRequest(rq.locator().requestUri());
-        }
-        if (Stream.of("show", "show.htm", "show.html")
-                  .anyMatch(resourcePath::endsWith)) {
-            return classPathResponse("show.html", MediaType.TEXT_HTML);
-        }
-        if (resourcePath.endsWith("show.js")) {
-            return classPathResponse("show.js", MediaType.valueOf("application/javascript"));
-        }
-        if (resourcePath.endsWith("show.css")) {
-            return classPathResponse("show.css", MediaType.valueOf("text/css"));
-        }
-        if (resourcePath.endsWith("index.json")) {
-            return jsonResponse(rq.order(), rq.locator());
-        }
-        final ImageType type = ImageType.of(resourcePath);
-        if (null != type) {
-            return imageResponse(resourcePath, type.mediaType());
-        }
-        return notFound(rq.locator().requestUri());
-    }
-
-    private ResponseEntity<?> jsonResponse(final Comparator<FileEntry> order, final Locator locator) {
-        final FileEntry entry = FileEntry.of(locator.resourcePath().getParent(), LinkHandling.RESOLVE);
-        if (entry.isDirectory()) {
-            final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
-            // relative ...
-            final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
-            final String replacement = "";                         // absolute: locator.serviceUri().toString();
-            final var stage1 = streamer.stream(entry) //.parallel()
-                                       .filter(FileEntry::isRegularFile)
-                                       .filter(ImageType::isMatching);
-            final var stage2 = (null == order) ? stage1
-                                               : stage1.sorted(order);
-            final var json = stage2.map(FileEntry::path)
-                                   .map(Path::toUri)
-                                   .map(URI::toString)
-                                   .map(s -> s.replace(target, replacement))
-                                   .map(s -> '"' + s + '"')
-                                   .collect(joining(", ", "[", "]"));
-            return ResponseEntity.ok()
-                                 .contentType(MediaType.APPLICATION_JSON)
-                                 .body(json);
-        }
-        return notFound(locator.requestUri());
+        final var choices = Choices.serial(Request::isInconsistent,
+                                           Request::isShowHTML,
+                                           Request::isShowJS,
+                                           Request::isShowCSS,
+                                           Request::isShowJson,
+                                           Request::isImage);
+        final var rq = new Request(aliasMap, request, alias);
+        return switch (choices.apply(rq)) {
+            case 0 -> badRequest(rq.locator().requestUri());
+            case 1 -> classPathResponse("show.html", MediaType.TEXT_HTML);
+            case 2 -> classPathResponse("show.js", MediaType.valueOf("application/javascript"));
+            case 3 -> classPathResponse("show.css", MediaType.valueOf("text/css"));
+            case 4 -> new ShowJson(rq).response();
+            case 5 -> imageResponse(rq.locator().resourcePath(), rq.imageType().mediaType());
+            default -> notFound(rq.locator().requestUri());
+        };
     }
 
     private ResponseEntity<?> imageResponse(final Path path, final MediaType mediaType) {
