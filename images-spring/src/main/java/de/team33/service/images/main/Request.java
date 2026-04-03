@@ -60,7 +60,7 @@ class Request {
     }
 
     final boolean isShowJson() {
-        return locator.resourcePath().endsWith("index.json");
+        return locator.resourcePath().endsWith("show.json");
     }
 
     final boolean isImage() {

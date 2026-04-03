@@ -24,6 +24,7 @@ public class Controller {
                            Request::isShowJS,
                            Request::isShowCSS,
                            Request::isShowJson,
+                           Request::isShowJson,
                            Request::isImage)
                    .applying(RspBadRequest::new,
                              RspShowHTML::new,

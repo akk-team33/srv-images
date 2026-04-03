@@ -30,7 +30,7 @@ const geoScales      = [0.125, 0.177, 0.250, 0.354, 0.500, 0.707, 1.000, 1.414, 
 // JSON file by URL-Parameter
 // ---------------------------
 const urlParams = new URLSearchParams(window.location.search);
-const jsonFile = urlParams.get("images") || "index.json"; // Fallback auf Standard
+const jsonFile = urlParams.get("images") || "show.json"; // Fallback auf Standard
 
 fileSpan.textContent = jsonFile; // direkt anzeigen, bevor es geladen wird
 
