@@ -3,6 +3,7 @@ package de.team33.service.images.main;
 import org.springframework.http.ResponseEntity;
 
 import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
 
 abstract class Responder {
 
@@ -15,6 +16,11 @@ abstract class Responder {
     }
 
     abstract ResponseEntity<?> response();
+
+    final ResponseEntity<?> badRequest() {
+        LOGGER.log(WARNING, () -> "Bad Request: " + request.locator().requestUri());
+        return ResponseEntity.badRequest().build();
+    }
 
     final ResponseEntity<?> notFound() {
         LOGGER.log(INFO, () -> "Not Found: " + request.locator().requestUri());
