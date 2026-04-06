@@ -27,10 +27,6 @@
         </dependency>
         <dependency>
             <groupId>de.team33.patterns</groupId>
-            <artifactId>decision-thyone</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.team33.patterns</groupId>
             <artifactId>lazy-narvi</artifactId>
         </dependency>
 
