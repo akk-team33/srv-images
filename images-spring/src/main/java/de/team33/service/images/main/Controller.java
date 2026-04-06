@@ -1,6 +1,5 @@
 package de.team33.service.images.main;
 
-import de.team33.patterns.decision.thyone.Choices;
 import de.team33.service.images.core.AliasMap;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
@@ -28,11 +27,9 @@ public class Controller {
         return new ClassPathResource("index.html", Controller.class);
     }
 
-    @GetMapping(value = "/{name}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping("/{name}")
     public ResponseEntity<?> getByName(final HttpServletRequest httpRequest, @PathVariable("name") final String name) {
-        final var byNameFunction = Choices.serial(RequestByName::isFavicon);
-        final var request = new RequestByName(aliasMap, httpRequest, name);
-        return ResponseEntity.notFound().build();
+        return new RequestByName(aliasMap, httpRequest, name).response();
     }
 
     @GetMapping(value = "/{alias}/**", produces = MediaType.TEXT_PLAIN_VALUE)
