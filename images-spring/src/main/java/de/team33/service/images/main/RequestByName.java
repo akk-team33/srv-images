@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 class RequestByName extends RequestBase {
 
-    private static final Function<RequestByName, ResponseEntity<? extends Object>> MAPPING =
+    private static final Function<RequestByName, ResponseEntity<?>> MAPPING =
             Choices.serial(RequestByName::isFavicon,
                            RequestByName::isAbout,
                            RequestByName::isIndexCSS,

@@ -1,0 +1,84 @@
+package de.team33.service.images.main;
+
+import de.team33.patterns.decision.thyone.Choices;
+import de.team33.patterns.io.adrastea.FileEntry;
+import de.team33.patterns.io.adrastea.LinkHandling;
+import de.team33.service.images.core.AliasMap;
+import de.team33.service.images.core.Locator;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
+class RequestByAlias extends RequestBase {
+
+    private static final Function<RequestByAlias, ResponseEntity<?>> MAPPING =
+            Choices.serial(RequestByAlias::isIndexCSS,
+                           RequestByAlias::isIndexJS,
+                           RequestByAlias::isIndexHTML,
+                           RequestByAlias::isIndexJson)
+                   .applying(RequestByAlias::toIndexCSS,
+                             RequestByAlias::toIndexJS,
+                             RequestByAlias::toIndexHTML,
+                             RequestByAlias::toIndexJson,
+                             RequestByAlias::toNotFound);
+    private static final AliasMap.Entry NULL_ENTRY = new AliasMap.Entry("NULL",
+                                                                        Path.of("NULL")
+                                                                            .toAbsolutePath()
+                                                                            .normalize(),
+                                                                        null, null);
+
+    //private final Locator locator;
+    private final Path basePath;
+    private final URI baseUri;
+    private final URI relativeUri;
+    private final Path resourcePath;
+
+    RequestByAlias(final AliasMap aliasMap, final HttpServletRequest httpRequest, final String alias) {
+        super(httpRequest);
+        final AliasMap.Entry entry = Optional.ofNullable(aliasMap.get(alias)).orElse(NULL_ENTRY);
+        final var locator = Locator.by(Util.CONTROLLER_ROOT, entry)
+                                   .setRequestUrl(httpRequest.getRequestURL().toString())
+                                   .setResourceUri(httpRequest.getRequestURI())
+                                   .build();
+        this.basePath = entry.path();
+        this.baseUri = URI.create(Util.CONTROLLER_ROOT).resolve(entry.alias());
+        this.relativeUri = relativeUri(httpRequest.getRequestURI(), baseUri.toString());
+        this.resourcePath = resourcePath(this.basePath, this.relativeUri);
+    }
+
+    private static URI relativeUri(final String resourceUri, final String baseUri) {
+        final int index = Integer.min(baseUri.length() + 1, resourceUri.length());
+        return URI.create(resourceUri.substring(index));
+    }
+
+    private static Path resourcePath(Path basePath, URI relativeUri) {
+        return Path.of(basePath.toUri().resolve(relativeUri));
+    }
+
+    private ResponseEntity<?> toIndexJson() {
+        final FileEntry entry = FileEntry.of(resourcePath.getParent(), LinkHandling.RESOLVE);
+        // relative ...
+        final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
+        final String replacement = "";                         // absolute: locator.serviceUri().toString();
+        final List<String> list = FileEntry.lister(LinkHandling.DISCLOSE)
+                                           .list(entry)
+                                           .stream()
+                                           .filter(FileEntry::isDirectory)
+                                           .map(FileEntry::path)
+                                           .map(Path::toUri)
+                                           .map(URI::toString)
+                                           .map(s -> s.replace(target, replacement))
+                                           .toList();
+        return jsonResponse(list);
+    }
+
+    @Override
+    final ResponseEntity<?> response() {
+        return MAPPING.apply(this);
+    }
+}

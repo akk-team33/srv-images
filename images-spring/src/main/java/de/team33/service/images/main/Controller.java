@@ -8,9 +8,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(Util.CONTROLLER_ROOT)
 public class Controller {
 
     private final AliasMap aliasMap;
@@ -28,12 +30,14 @@ public class Controller {
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<?> getByName(final HttpServletRequest httpRequest, @PathVariable("name") final String name) {
+    public ResponseEntity<?> getByName(final HttpServletRequest httpRequest,
+                                       @PathVariable("name") final String name) {
         return new RequestByName(aliasMap, httpRequest, name).response();
     }
 
-    @GetMapping(value = "/{alias}/**", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String getByAlias(final HttpServletRequest request, @PathVariable("alias") final String alias) {
-        return "Controller.getByAlias(): '%s' - url: %s".formatted(alias, request.getRequestURL());
+    @GetMapping(value = "/{alias}/**")
+    public ResponseEntity<?> getByAlias(final HttpServletRequest httpRequest,
+                                        @PathVariable("alias") final String alias) {
+        return new RequestByAlias(aliasMap, httpRequest, alias).response();
     }
 }

@@ -57,7 +57,7 @@ abstract class RequestBase {
     }
 
     final boolean isIndexHTML() {
-        return uriEndsWith("index", "index.htm", "index.html");
+        return uriEndsWith("", "index", "index.htm", "index.html");
     }
 
     final boolean isIndexJson() {
