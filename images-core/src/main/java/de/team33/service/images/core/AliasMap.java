@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableMap;
 
@@ -22,6 +23,10 @@ public class AliasMap {
     public final Entry get(final String alias) {
         return Optional.ofNullable(backing.get(alias))
                        .orElseGet(() -> new Entry(alias, Util.noBasePath(), null, null));
+    }
+
+    public final Stream<Entry> stream() {
+        return backing.values().stream();
     }
 
     public record Entry(String alias, Path path, EntryOrder order, Direction direction) {
