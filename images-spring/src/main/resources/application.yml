@@ -2,15 +2,11 @@ server:
   port: 8180
 images:
   entries:
-    - alias: 1997
-      path: /Volumes/andi/Fotos/00-Aufnahme/1997
+    - alias: cwd
+      path: .
       order: NAME # PATH, NAME, UPDATE
       direction: DESC # ASC, DESC
-    - alias: 1998
-      path: /Volumes/andi/Fotos/00-Aufnahme/1998
-      order: UPDATE
-      direction: ASC
-    - alias: 2026
-      path: /Volumes/andi/Fotos/00-Aufnahme/2026
-    - alias: Fotos
-      path: /Volumes/andi/Fotos
+    - alias: root
+      path: /
+      order: NAME # PATH, NAME, UPDATE
+      direction: DESC # ASC, DESC
