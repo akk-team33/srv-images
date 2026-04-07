@@ -6,6 +6,7 @@ import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.service.images.core.AliasMap;
 import de.team33.service.images.core.Locator;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
@@ -20,12 +21,21 @@ class RequestByAlias extends RequestBase {
             Choices.serial(RequestByAlias::isIndexCSS,
                            RequestByAlias::isIndexJS,
                            RequestByAlias::isIndexHTML,
-                           RequestByAlias::isIndexJson)
+                           RequestByAlias::isIndexJson,
+                           RequestByAlias::isShowCSS,
+                           RequestByAlias::isShowJS,
+                           RequestByAlias::isShowHTML,
+                           RequestByAlias::isShowJson)
                    .applying(RequestByAlias::toIndexCSS,
                              RequestByAlias::toIndexJS,
                              RequestByAlias::toIndexHTML,
                              RequestByAlias::toIndexJson,
+                             RequestByAlias::toShowCSS,
+                             RequestByAlias::toShowJS,
+                             RequestByAlias::toShowHTML,
+                             RequestByAlias::toShowJson,
                              RequestByAlias::toNotFound);
+
     private static final AliasMap.Entry NULL_ENTRY = new AliasMap.Entry("NULL",
                                                                         Path.of("NULL")
                                                                             .toAbsolutePath()
@@ -60,6 +70,22 @@ class RequestByAlias extends RequestBase {
         return Path.of(basePath.toUri().resolve(relativeUri));
     }
 
+    private boolean isShowCSS() {
+        return uriEndsWith("show.css");
+    }
+
+    private boolean isShowJS() {
+        return uriEndsWith("show.js");
+    }
+
+    private boolean isShowHTML() {
+        return uriEndsWith("show", "show.htm", "show.html");
+    }
+
+    private boolean isShowJson() {
+        return uriEndsWith("show.json");
+    }
+
     private ResponseEntity<?> toIndexJson() {
         final FileEntry entry = FileEntry.of(resourcePath.getParent(), LinkHandling.RESOLVE);
         // relative ...
@@ -75,6 +101,22 @@ class RequestByAlias extends RequestBase {
                                            .map(s -> s.replace(target, replacement))
                                            .toList();
         return jsonResponse(list);
+    }
+
+    private ResponseEntity<?> toShowCSS() {
+        return classPathResponse(MediaType.valueOf("text/css"), "show.css");
+    }
+
+    private ResponseEntity<?> toShowJS() {
+        return classPathResponse(MediaType.valueOf("application/javascript"), "show.js");
+    }
+
+    private ResponseEntity<?> toShowHTML() {
+        return classPathResponse(MediaType.TEXT_HTML, "show.html");
+    }
+
+    private ResponseEntity<?> toShowJson() {
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override
