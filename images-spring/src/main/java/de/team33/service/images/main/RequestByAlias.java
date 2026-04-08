@@ -46,23 +46,24 @@ class RequestByAlias extends RequestBase {
                              RequestByAlias::toImage,
                              RequestByAlias::notFound);
 
-    //private final Locator locator;
-    private final Path basePath;
-    private final URI baseUri;
-    private final URI relativeUri;
-    private final Path resourcePath;
-    private final Comparator<FileEntry> order;
+    private final Lazy<AliasMap.Entry> lazyEntry;
+    private final Lazy<Path> lazyBasePath;
+    private final Lazy<URI> lazyBaseUri;
+    private final Lazy<URI> lazyRelativeUri;
+    private final Lazy<Path> lazyResourcePath;
+    private final Lazy<Comparator<FileEntry>> lazyOrder;
     private final Lazy<ImageType> lazyImageType;
 
     RequestByAlias(final AliasMap aliasMap, final HttpServletRequest httpRequest, final String alias) {
         super(httpRequest);
-        final AliasMap.Entry entry = aliasMap.get(alias);
-        this.basePath = Path.of(entry.path());
-        this.baseUri = URI.create(Util.CONTROLLER_ROOT).resolve(entry.alias());
-        this.relativeUri = relativeUri(httpRequest.getRequestURI(), baseUri.toString());
-        this.resourcePath = resourcePath(this.basePath, this.relativeUri);
-        this.order = order(entry);
-        this.lazyImageType = Lazy.init(() -> ImageType.of(resourcePath));
+        this.lazyEntry = Lazy.init(() -> aliasMap.get(alias));
+        this.lazyBasePath = Lazy.init(() -> Path.of(lazyEntry.get().path()));
+        this.lazyBaseUri = Lazy.init(() -> URI.create(Util.CONTROLLER_ROOT).resolve(alias));
+        this.lazyRelativeUri = Lazy.init(() -> relativeUri(httpRequest().getRequestURI(),
+                                                           lazyBaseUri.get().toString()));
+        this.lazyResourcePath = Lazy.init(() -> resourcePath(lazyBasePath.get(), lazyRelativeUri.get()));
+        this.lazyOrder = Lazy.init(() -> order(lazyEntry.get()));
+        this.lazyImageType = Lazy.init(() -> ImageType.of(lazyResourcePath.get()));
     }
 
     private static URI relativeUri(final String resourceUri, final String baseUri) {
@@ -111,7 +112,7 @@ class RequestByAlias extends RequestBase {
     }
 
     private ResponseEntity<?> toIndexJson() {
-        final FileEntry entry = FileEntry.of(resourcePath.getParent(), LinkHandling.RESOLVE);
+        final FileEntry entry = FileEntry.of(lazyResourcePath.get().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             // relative ...
             final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
@@ -151,28 +152,31 @@ class RequestByAlias extends RequestBase {
     }
 
     private ResponseEntity<?> toShowJson() {
-        final FileEntry entry = FileEntry.of(resourcePath.getParent(), LinkHandling.RESOLVE);
+        final FileEntry entry = FileEntry.of(lazyResourcePath.get().getParent(), LinkHandling.RESOLVE);
         if (entry.isDirectory()) {
             final FileEntry.Streamer streamer = FileEntry.streamer(LinkHandling.DISCLOSE);
             // relative ...
-            final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
-            final String replacement = "";                         // absolute: locator.serviceUri().toString();
-            final var stage1 = streamer.stream(entry) //.parallel()
-                                       .filter(FileEntry::isRegularFile)
-                                       .filter(ImageType::isMatching);
-            final var stage2 = (null == order) ? stage1
-                                               : stage1.sorted(order);
-            final var list = stage2.map(FileEntry::path)
-                                   .map(Path::toUri)
-                                   .map(URI::toString)
-                                   .map(s -> s.replace(target, replacement))
-                                   .toList();
+            final String target = entry.path().toUri().toString(); // absolute: basePath.toUri().toString();
+            final String replacement = "";                         // absolute: serviceUri.toString();
+            final var stage = streamer.stream(entry) //.parallel()
+                                      .filter(FileEntry::isRegularFile)
+                                      .filter(ImageType::isMatching);
+            //noinspection DataFlowIssue
+            final var list = Optional.ofNullable(lazyOrder.get())
+                                     .map(stage::sorted)
+                                     .orElse(stage)
+                                     .map(FileEntry::path)
+                                     .map(Path::toUri)
+                                     .map(URI::toString)
+                                     .map(s -> s.replace(target, replacement))
+                                     .toList();
             return jsonResponse(list);
         }
         return notFound();
     }
 
     private ResponseEntity<?> toImage() {
+        final Path resourcePath = lazyResourcePath.get();
         if (Files.isRegularFile(resourcePath)) {
             return ResponseEntity.ok()
                                  .contentType(lazyImageType.get().mediaType())

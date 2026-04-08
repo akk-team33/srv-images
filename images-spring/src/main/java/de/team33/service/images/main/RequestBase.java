@@ -13,10 +13,20 @@ abstract class RequestBase {
     private static final System.Logger LOGGER = System.getLogger(RequestBase.class.getCanonicalName());
     private static final URI HOST_ROOT = URI.create("/");
 
+    private final HttpServletRequest httpRequest;
     private final URI requestUri;
 
     RequestBase(final HttpServletRequest httpRequest) {
+        this.httpRequest = httpRequest;
         this.requestUri = URI.create(httpRequest.getRequestURL().toString());
+    }
+
+    final HttpServletRequest httpRequest() {
+        return httpRequest;
+    }
+
+    final URI requestUri() {
+        return requestUri;
     }
 
     final ResponseEntity<?> classPathResponse(final MediaType mediaType, final String path) {
