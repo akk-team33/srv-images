@@ -19,13 +19,13 @@ class RequestByName extends RequestBase {
                            RequestByName::isIndexJS,
                            RequestByName::isIndexHTML,
                            RequestByName::isIndexJson)
-                   .applying(RequestByName::toFavIcon,
+                   .applying(RequestByName::toFavicon,
                              RequestByName::toAbout,
                              RequestByName::toIndexCSS,
                              RequestByName::toIndexJS,
                              RequestByName::toIndexHTML,
                              RequestByName::toIndexJson,
-                             RequestByName::toNotFound);
+                             RequestByName::notFound);
 
     private final AliasMap aliasMap;
     private final String name;
@@ -45,7 +45,7 @@ class RequestByName extends RequestBase {
                      .anyMatch(about -> about.equalsIgnoreCase(name));
     }
 
-    private ResponseEntity<?> toFavIcon() {
+    private ResponseEntity<?> toFavicon() {
         return ResponseEntity.ok()
                              .contentType(MediaType.IMAGE_PNG)
                              .body(new ClassPathResource("favicon.png", RequestByName.class));

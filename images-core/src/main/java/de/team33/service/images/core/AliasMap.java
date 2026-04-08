@@ -22,17 +22,17 @@ public class AliasMap {
 
     public final Entry get(final String alias) {
         return Optional.ofNullable(backing.get(alias))
-                       .orElseGet(() -> new Entry(alias, Util.noBasePath(), null, null));
+                       .orElseGet(() -> new Entry(alias, "NULL", null, null));
     }
 
     public final Stream<Entry> stream() {
         return backing.values().stream();
     }
 
-    public record Entry(String alias, Path path, EntryOrder order, Direction direction) {
+    public record Entry(String alias, String path, EntryOrder order, Direction direction) {
 
         public Entry normalize() {
-            return new Entry(alias, path.toAbsolutePath().normalize(), order, direction);
+            return new Entry(alias, Path.of(path).toAbsolutePath().normalize().toString(), order, direction);
         }
     }
 

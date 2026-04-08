@@ -6,7 +6,6 @@ import de.team33.patterns.io.adrastea.LinkHandling;
 import de.team33.patterns.lazy.narvi.Lazy;
 import de.team33.service.images.core.AliasMap;
 import de.team33.service.images.core.Direction;
-import de.team33.service.images.core.Locator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
@@ -45,13 +44,7 @@ class RequestByAlias extends RequestBase {
                              RequestByAlias::toShowHTML,
                              RequestByAlias::toShowJson,
                              RequestByAlias::toImage,
-                             RequestByAlias::toNotFound);
-
-    private static final AliasMap.Entry NULL_ENTRY = new AliasMap.Entry("NULL",
-                                                                        Path.of("NULL")
-                                                                            .toAbsolutePath()
-                                                                            .normalize(),
-                                                                        null, null);
+                             RequestByAlias::notFound);
 
     //private final Locator locator;
     private final Path basePath;
@@ -63,12 +56,8 @@ class RequestByAlias extends RequestBase {
 
     RequestByAlias(final AliasMap aliasMap, final HttpServletRequest httpRequest, final String alias) {
         super(httpRequest);
-        final AliasMap.Entry entry = Optional.ofNullable(aliasMap.get(alias)).orElse(NULL_ENTRY);
-        final var locator = Locator.by(Util.CONTROLLER_ROOT, entry)
-                                   .setRequestUrl(httpRequest.getRequestURL().toString())
-                                   .setResourceUri(httpRequest.getRequestURI())
-                                   .build();
-        this.basePath = entry.path();
+        final AliasMap.Entry entry = aliasMap.get(alias);
+        this.basePath = Path.of(entry.path());
         this.baseUri = URI.create(Util.CONTROLLER_ROOT).resolve(entry.alias());
         this.relativeUri = relativeUri(httpRequest.getRequestURI(), baseUri.toString());
         this.resourcePath = resourcePath(this.basePath, this.relativeUri);
@@ -138,7 +127,7 @@ class RequestByAlias extends RequestBase {
                                                .toList();
             return jsonResponse(list);
         }
-        return toNotFound();
+        return notFound();
     }
 
     private ResponseEntity<?> toNoJPG() {
@@ -180,7 +169,7 @@ class RequestByAlias extends RequestBase {
                                    .toList();
             return jsonResponse(list);
         }
-        return toNotFound();
+        return notFound();
     }
 
     private ResponseEntity<?> toImage() {
@@ -189,7 +178,7 @@ class RequestByAlias extends RequestBase {
                                  .contentType(lazyImageType.get().mediaType())
                                  .body(new FileSystemResource(resourcePath));
         }
-        return toNotFound();
+        return notFound();
     }
 
     @Override

@@ -11,13 +11,11 @@ import java.util.stream.Stream;
 abstract class RequestBase {
 
     private static final System.Logger LOGGER = System.getLogger(RequestBase.class.getCanonicalName());
-    private static final URI ROOT = URI.create("/");
+    private static final URI HOST_ROOT = URI.create("/");
 
-    //private final URI resourceUri;
     private final URI requestUri;
 
     RequestBase(final HttpServletRequest httpRequest) {
-        //this.resourceUri = URI.create(httpRequest.getRequestURI());
         this.requestUri = URI.create(httpRequest.getRequestURL().toString());
     }
 
@@ -33,14 +31,14 @@ abstract class RequestBase {
                              .body(value);
     }
 
-    final ResponseEntity<?> toNotFound() {
+    final ResponseEntity<?> notFound() {
         LOGGER.log(System.Logger.Level.INFO, () -> "not found: %s".formatted(requestUri));
         return ResponseEntity.notFound().build();
     }
 
     final boolean uriEndsWith(final String... names) {
         return Stream.of(names)
-                     .map(ROOT::resolve)
+                     .map(HOST_ROOT::resolve)
                      .anyMatch(this::uriEndsWith);
     }
 
