@@ -2,6 +2,7 @@ package de.team33.service.images.main;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -43,7 +44,10 @@ abstract class RequestBase {
 
     final ResponseEntity<?> notFound() {
         LOGGER.log(System.Logger.Level.INFO, () -> "not found: %s".formatted(requestUri));
-        return ResponseEntity.notFound().build();
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(HttpStatus.NOT_FOUND.value() + " - " + HttpStatus.NOT_FOUND.getReasonPhrase());
     }
 
     final boolean uriEndsWith(final String... names) {

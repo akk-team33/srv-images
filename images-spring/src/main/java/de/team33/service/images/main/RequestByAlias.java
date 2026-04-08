@@ -46,24 +46,22 @@ class RequestByAlias extends RequestBase {
                              RequestByAlias::toImage,
                              RequestByAlias::notFound);
 
-    private final Lazy<AliasMap.Entry> lazyEntry;
-    private final Lazy<Path> lazyBasePath;
-    private final Lazy<URI> lazyBaseUri;
-    private final Lazy<URI> lazyRelativeUri;
     private final Lazy<Path> lazyResourcePath;
     private final Lazy<Comparator<FileEntry>> lazyOrder;
     private final Lazy<ImageType> lazyImageType;
 
     RequestByAlias(final AliasMap aliasMap, final HttpServletRequest httpRequest, final String alias) {
         super(httpRequest);
-        this.lazyEntry = Lazy.init(() -> aliasMap.get(alias));
-        this.lazyBasePath = Lazy.init(() -> Path.of(lazyEntry.get().path()));
-        this.lazyBaseUri = Lazy.init(() -> URI.create(Util.CONTROLLER_ROOT).resolve(alias));
-        this.lazyRelativeUri = Lazy.init(() -> relativeUri(httpRequest().getRequestURI(),
-                                                           lazyBaseUri.get().toString()));
-        this.lazyResourcePath = Lazy.init(() -> resourcePath(lazyBasePath.get(), lazyRelativeUri.get()));
+        final var lazyEntry = Lazy.init(() -> aliasMap.get(alias));
+        this.lazyResourcePath = Lazy.init(() -> resourcePath(Path.of(lazyEntry.get().path()),
+                                                             relativeUri(httpRequest().getRequestURI(),
+                                                                         baseUri(alias).toString())));
         this.lazyOrder = Lazy.init(() -> order(lazyEntry.get()));
         this.lazyImageType = Lazy.init(() -> ImageType.of(lazyResourcePath.get()));
+    }
+
+    private static URI baseUri(final String alias) {
+        return URI.create(Util.CONTROLLER_ROOT).resolve(alias);
     }
 
     private static URI relativeUri(final String resourceUri, final String baseUri) {
