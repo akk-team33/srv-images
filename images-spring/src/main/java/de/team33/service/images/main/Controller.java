@@ -1,6 +1,7 @@
 package de.team33.service.images.main;
 
 import de.team33.service.images.core.AliasMap;
+import de.team33.service.images.core.AliasMap.Builder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -19,8 +20,8 @@ public class Controller {
 
     public Controller(final Properties properties) {
         this.aliasMap = properties.getEntries().stream()
-                                  .map(AliasMap.Entry::normalize)
-                                  .collect(AliasMap::builder, AliasMap.Builder::put, AliasMap.Builder::putAll)
+                                  .map(Properties.Entry::toAliasMapEntry)
+                                  .collect(AliasMap::builder, Builder::put, Builder::putAll)
                                   .build();
     }
 

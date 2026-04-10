@@ -18,13 +18,17 @@ class RequestByName extends RequestBase {
                            RequestByName::isIndexCSS,
                            RequestByName::isIndexJS,
                            RequestByName::isIndexHTML,
-                           RequestByName::isIndexJson)
+                           RequestByName::isIndexJson,
+                           RequestByName::isShowRPNG,
+                           RequestByName::isFolderupRPNG)
                    .applying(RequestByName::toFavicon,
                              RequestByName::toAbout,
                              RequestByName::toIndexCSS,
                              RequestByName::toIndexJS,
                              RequestByName::toIndexHTML,
                              RequestByName::toIndexJson,
+                             RequestByName::toShowRPNG,
+                             RequestByName::toFolderupRPNG,
                              RequestByName::notFound);
 
     private final AliasMap aliasMap;

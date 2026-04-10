@@ -15,19 +15,15 @@ abstract class RequestBase {
     private static final URI HOST_ROOT = URI.create("/");
 
     private final HttpServletRequest httpRequest;
-    private final URI requestUri;
+    private final String requestUri;
 
     RequestBase(final HttpServletRequest httpRequest) {
         this.httpRequest = httpRequest;
-        this.requestUri = URI.create(httpRequest.getRequestURL().toString());
+        this.requestUri = httpRequest.getRequestURL().toString();
     }
 
     final HttpServletRequest httpRequest() {
         return httpRequest;
-    }
-
-    final URI requestUri() {
-        return requestUri;
     }
 
     final ResponseEntity<?> classPathResponse(final MediaType mediaType, final String path) {
@@ -50,14 +46,14 @@ abstract class RequestBase {
                 .body(HttpStatus.NOT_FOUND.value() + " - " + HttpStatus.NOT_FOUND.getReasonPhrase());
     }
 
+    private boolean uriEndsWith(final URI name) {
+        return requestUri.endsWith(name.toString());
+    }
+
     final boolean uriEndsWith(final String... names) {
         return Stream.of(names)
                      .map(HOST_ROOT::resolve)
                      .anyMatch(this::uriEndsWith);
-    }
-
-    private boolean uriEndsWith(final URI name) {
-        return requestUri.toString().endsWith(name.toString());
     }
 
     final boolean isIndexCSS() {
@@ -76,6 +72,14 @@ abstract class RequestBase {
         return uriEndsWith("index.json");
     }
 
+    final boolean isShowRPNG() {
+        return uriEndsWith("show.rpng");
+    }
+
+    final boolean isFolderupRPNG() {
+        return uriEndsWith("folderup.rpng");
+    }
+
     final ResponseEntity<?> toIndexCSS() {
         return classPathResponse(MediaType.valueOf("text/css"), "index.css");
     }
@@ -86,6 +90,14 @@ abstract class RequestBase {
 
     final ResponseEntity<?> toIndexHTML() {
         return classPathResponse(MediaType.TEXT_HTML, "index.html");
+    }
+
+    final ResponseEntity<?> toShowRPNG() {
+        return classPathResponse(MediaType.IMAGE_PNG, "find.png");
+    }
+
+    final ResponseEntity<?> toFolderupRPNG() {
+        return classPathResponse(MediaType.IMAGE_PNG, "folderup.png");
     }
 
     abstract ResponseEntity<?> response();

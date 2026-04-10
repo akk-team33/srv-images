@@ -10,6 +10,8 @@ import static java.util.Collections.unmodifiableMap;
 
 public class AliasMap {
 
+    private static final Path NULL = Path.of("NULL").toAbsolutePath().normalize();
+
     private final Map<String, Entry> backing;
 
     private AliasMap(final Builder builder) {
@@ -22,18 +24,14 @@ public class AliasMap {
 
     public final Entry get(final String alias) {
         return Optional.ofNullable(backing.get(alias))
-                       .orElseGet(() -> new Entry(alias, "NULL", null, null));
+                       .orElseGet(() -> new Entry(alias, NULL, null, null));
     }
 
     public final Stream<Entry> stream() {
         return backing.values().stream();
     }
 
-    public record Entry(String alias, String path, EntryOrder order, Direction direction) {
-
-        public Entry normalize() {
-            return new Entry(alias, Path.of(path).toAbsolutePath().normalize().toString(), order, direction);
-        }
+    public record Entry(String alias, Path path, EntryOrder order, Direction direction) {
     }
 
     public static class Builder {

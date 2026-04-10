@@ -70,7 +70,7 @@ function showImage(index) {
     } else {
         currentIndex = 0;
         indexSpan.textContent = "-/" + images.length;
-        showImageByURL("NOTHING.JPG");
+        showImageByURL("NOTHING.PNG");
     }
     canvas.focus({ preventScroll: true });
 }

@@ -19,25 +19,13 @@
     <dependencies>
         <dependency>
             <groupId>de.team33.patterns</groupId>
-            <artifactId>io-deimos</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.team33.patterns</groupId>
-            <artifactId>enums-pan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.team33.patterns</groupId>
-            <artifactId>lazy-narvi</artifactId>
+            <artifactId>io-adrastea</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.team33.testing</groupId>
-            <artifactId>stdio-ersa</artifactId>
         </dependency>
     </dependencies>
 
