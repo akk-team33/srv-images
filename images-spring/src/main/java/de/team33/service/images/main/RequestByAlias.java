@@ -94,6 +94,13 @@ class RequestByAlias extends RequestBase {
         return classPathResponse(MediaType.TEXT_HTML, "index.html");
     }
 
+    private static boolean hasImages(final FileEntry entry) {
+        return STREAMER.stream(entry)
+                       .map(FileEntry::resolved)
+                       .filter(FileEntry::isRegularFile)
+                       .anyMatch(ImageType::isMatching);
+    }
+
     private ResponseEntity<?> toIndexJson() {
         final FileEntry entry = FileEntry.resolved(resourcePath().getParent());
         if (entry.isDirectory()) {
@@ -102,6 +109,7 @@ class RequestByAlias extends RequestBase {
             final String replacement = "";                         // absolute: locator.serviceUri().toString();
             final List<String> list = LISTER.list(entry).stream()
                                             .filter(FileEntry::isDirectory)
+                                            .filter(RequestByAlias::hasImages)
                                             .map(FileEntry::path)
                                             .map(Path::toUri)
                                             .map(URI::toString)
