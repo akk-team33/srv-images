@@ -1,12 +1,12 @@
 server:
-  port: 8180
+  port: 2080
 images:
   entries:
     - alias: cwd
       path: .
       order: NAME # PATH, NAME, UPDATE
-      direction: DESC # ASC, DESC
+      direction: ASC # ASC, DESC
     - alias: root
       path: /
-      order: NAME # PATH, NAME, UPDATE
-      direction: DESC # ASC, DESC
+      order: PATH # PATH, NAME, UPDATE
+      direction: ASC # ASC, DESC
