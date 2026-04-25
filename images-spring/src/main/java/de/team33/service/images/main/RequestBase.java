@@ -76,6 +76,10 @@ abstract class RequestBase {
         return uriEndsWith("show.rpng");
     }
 
+    final boolean isFolderRPNG() {
+        return uriEndsWith("folder.rpng");
+    }
+
     final boolean isFolderupRPNG() {
         return uriEndsWith("folderup.rpng");
     }
@@ -88,12 +92,14 @@ abstract class RequestBase {
         return classPathResponse(MediaType.valueOf("application/javascript"), "index.js");
     }
 
-    final ResponseEntity<?> toIndexHTML() {
-        return classPathResponse(MediaType.TEXT_HTML, "index.html");
-    }
+    abstract ResponseEntity<?> toIndexHTML();
 
     final ResponseEntity<?> toShowRPNG() {
         return classPathResponse(MediaType.IMAGE_PNG, "find.png");
+    }
+
+    final ResponseEntity<?> toFolderRPNG() {
+        return classPathResponse(MediaType.IMAGE_PNG, "folderclosed.png");
     }
 
     final ResponseEntity<?> toFolderupRPNG() {

@@ -90,6 +90,10 @@ class RequestByAlias extends RequestBase {
         return null != imageType();
     }
 
+    final ResponseEntity<?> toIndexHTML() {
+        return classPathResponse(MediaType.TEXT_HTML, "index.html");
+    }
+
     private ResponseEntity<?> toIndexJson() {
         final FileEntry entry = FileEntry.resolved(resourcePath().getParent());
         if (entry.isDirectory()) {

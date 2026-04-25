@@ -20,7 +20,7 @@ class RequestByName extends RequestBase {
                            RequestByName::isIndexHTML,
                            RequestByName::isIndexJson,
                            RequestByName::isShowRPNG,
-                           RequestByName::isFolderupRPNG)
+                           RequestByName::isFolderRPNG)
                    .applying(RequestByName::toFavicon,
                              RequestByName::toAbout,
                              RequestByName::toIndexCSS,
@@ -28,7 +28,7 @@ class RequestByName extends RequestBase {
                              RequestByName::toIndexHTML,
                              RequestByName::toIndexJson,
                              RequestByName::toShowRPNG,
-                             RequestByName::toFolderupRPNG,
+                             RequestByName::toFolderRPNG,
                              RequestByName::notFound);
 
     private final AliasMap aliasMap;
@@ -57,6 +57,10 @@ class RequestByName extends RequestBase {
 
     private ResponseEntity<?> toAbout() {
         return classPathResponse(MediaType.TEXT_HTML, "about.html");
+    }
+
+    final ResponseEntity<?> toIndexHTML() {
+        return classPathResponse(MediaType.TEXT_HTML, "index-root.html");
     }
 
     private ResponseEntity<?> toIndexJson() {

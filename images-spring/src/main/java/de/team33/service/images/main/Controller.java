@@ -27,7 +27,7 @@ public class Controller {
 
     @GetMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
     public Resource getRoot() {
-        return new ClassPathResource("index.html", Controller.class);
+        return new ClassPathResource("index-root.html", Controller.class);
     }
 
     @GetMapping("/{name}")
