@@ -1,12 +1,52 @@
 server:
-  port: 2080
+  port: 80
 images:
   entries:
-    - alias: cwd
+    - alias: byNameASC
       path: .
       order: NAME # PATH, NAME, UPDATE
       direction: ASC # ASC, DESC
-    - alias: root
+    - alias: byNameDESC
+      path: .
+      order: NAME
+      direction: DESC
+    - alias: byPathASC
+      path: .
+      order: PATH
+      direction: ASC
+    - alias: byPathDESC
+      path: .
+      order: PATH
+      direction: DESC
+    - alias: byUpdateASC
+      path: .
+      order: UPDATE
+      direction: ASC
+    - alias: byUpdateDESC
+      path: .
+      order: UPDATE
+      direction: DESC
+    - alias: rootByNameASC
       path: /
-      order: PATH # PATH, NAME, UPDATE
+      order: NAME # PATH, NAME, UPDATE
       direction: ASC # ASC, DESC
+    - alias: rootByNameDESC
+      path: /
+      order: NAME
+      direction: DESC
+    - alias: rootByPathASC
+      path: /
+      order: PATH
+      direction: ASC
+    - alias: rootByPathDESC
+      path: /
+      order: PATH
+      direction: DESC
+    - alias: rootByUpdateASC
+      path: /
+      order: UPDATE
+      direction: ASC
+    - alias: rootByUpdateDESC
+      path: /
+      order: UPDATE
+      direction: DESC
