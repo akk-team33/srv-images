@@ -11,7 +11,8 @@ public enum EntryOrder implements Comparator<FileEntry> {
 
     PATH(comparing(FileEntry::path, Statics.PATH_ORDER)),
     NAME(comparing(FileEntry::name, Statics.STRING_ORDER).thenComparing(PATH)),
-    UPDATE(comparing(FileEntry::lastModified).thenComparing(PATH));
+    UPDATE(comparing(FileEntry::lastModified).thenComparing(PATH)),
+    SIZE(comparing(FileEntry::size).thenComparing(PATH));
 
     private final Comparator<FileEntry> backing;
 

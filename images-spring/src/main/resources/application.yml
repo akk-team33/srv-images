@@ -1,10 +1,10 @@
 server:
-  port: 80
+  port: 1080
 images:
   entries:
     - alias: byNameASC
       path: .
-      order: NAME # PATH, NAME, UPDATE
+      order: NAME # PATH, NAME, UPDATE, SIZE
       direction: ASC # ASC, DESC
     - alias: byNameDESC
       path: .
@@ -26,9 +26,17 @@ images:
       path: .
       order: UPDATE
       direction: DESC
+    - alias: bySizeASC
+      path: .
+      order: SIZE
+      direction: ASC
+    - alias: bySizeDESC
+      path: .
+      order: SIZE
+      direction: DESC
     - alias: rootByNameASC
       path: /
-      order: NAME # PATH, NAME, UPDATE
+      order: NAME # PATH, NAME, UPDATE, SIZE
       direction: ASC # ASC, DESC
     - alias: rootByNameDESC
       path: /
@@ -49,4 +57,12 @@ images:
     - alias: rootByUpdateDESC
       path: /
       order: UPDATE
+      direction: DESC
+    - alias: rootBySizeASC
+      path: /
+      order: SIZE
+      direction: ASC
+    - alias: rootBySizeDESC
+      path: /
+      order: SIZE
       direction: DESC
