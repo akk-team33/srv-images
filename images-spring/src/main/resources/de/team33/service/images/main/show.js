@@ -117,7 +117,7 @@ function nextGeoScale(scale) {
 
 function nextFitScale(scale) {
     const scales = fitScales();
-    return nextScale(scale, scales) ?? scales[0];
+    return Math.min(scale * 1.414, nextScale(scale, scales) ?? scales[0]);
 }
 
 function getSize(scale) {
