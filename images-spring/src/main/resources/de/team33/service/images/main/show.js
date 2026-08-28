@@ -117,7 +117,7 @@ function nextGeoScale(scale) {
 
 function nextFitScale(scale) {
     const scales = fitScales();
-    return Math.min(scale * 1.414, nextScale(scale, scales) ?? scales[0]);
+    return Math.min(nextGeoScale(scale), nextScale(scale, scales) ?? scales[0]);
 }
 
 function getSize(scale) {
@@ -218,6 +218,7 @@ function zoomNextFit()    { setScale(nextFitScale(currentScale)); }
 image.addEventListener("load", () => {
     setScale(fitViewScale());
     sizeSpan.textContent = image.naturalWidth + " × " + image.naturalHeight;
+    showControls();
 });
 image.addEventListener("click", event => {
     const rect = canvas.getBoundingClientRect();
@@ -226,6 +227,7 @@ image.addEventListener("click", event => {
         y : event.clientY - rect.top
     };
     setScale(nextFitScale(currentScale), point);
+    showControls();
 });
 
 canvas.addEventListener("mousedown", () => {
