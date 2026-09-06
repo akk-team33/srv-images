@@ -1,7 +1,7 @@
 package de.team33.service.images.main;
 
 import de.team33.patterns.enums.pan.Values;
-import de.team33.patterns.io.adrastea.FileEntry;
+import de.team33.patterns.files.pluto.FileEntry;
 import org.springframework.http.MediaType;
 
 import java.nio.file.Path;

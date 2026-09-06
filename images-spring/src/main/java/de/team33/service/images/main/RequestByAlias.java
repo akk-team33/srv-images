@@ -1,9 +1,9 @@
 package de.team33.service.images.main;
 
 import de.team33.patterns.decision.thyone.Choices;
-import de.team33.patterns.io.adrastea.FileEntry;
-import de.team33.patterns.io.adrastea.LinkHandling;
-import de.team33.patterns.lazy.narvi.LazyFeatures;
+import de.team33.patterns.files.pluto.FileEntry;
+import de.team33.patterns.files.styx.Styx;
+import de.team33.patterns.lazy.janus.Features;
 import de.team33.service.images.core.AliasMap;
 import de.team33.service.images.core.Direction;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +21,6 @@ import java.util.function.Function;
 
 class RequestByAlias extends RequestBase {
 
-    private static final FileEntry.Lister LISTER = FileEntry.lister(LinkHandling.RESOLVE);
-    private static final FileEntry.Streamer STREAMER = FileEntry.streamer(LinkHandling.ORIGINAL);
     private static final Function<RequestByAlias, ResponseEntity<?>> MAPPING =
             Choices.serial(RequestByAlias::isNoJPG,
                            RequestByAlias::isNothingPNG,
@@ -95,10 +93,10 @@ class RequestByAlias extends RequestBase {
     }
 
     private static boolean hasImages(final FileEntry entry) {
-        return STREAMER.stream(entry)
-                       .map(FileEntry::resolved)
-                       .filter(FileEntry::isRegularFile)
-                       .anyMatch(ImageType::isMatching);
+        return Styx.stream(entry)
+                   .map(FileEntry::resolved)
+                   .filter(FileEntry::isRegularFile)
+                   .anyMatch(ImageType::isMatching);
     }
 
     private ResponseEntity<?> toIndexJson() {
@@ -107,14 +105,14 @@ class RequestByAlias extends RequestBase {
             // relative ...
             final String target = entry.path().toUri().toString(); // absolute: locator.basePath().toUri().toString();
             final String replacement = "";                         // absolute: locator.serviceUri().toString();
-            final List<String> list = LISTER.list(entry).stream()
-                                            .filter(FileEntry::isDirectory)
-                                            .filter(RequestByAlias::hasImages)
-                                            .map(FileEntry::path)
-                                            .map(Path::toUri)
-                                            .map(URI::toString)
-                                            .map(s -> s.replace(target, replacement))
-                                            .toList();
+            final List<String> list = Styx.children(entry)
+                                          .filter(FileEntry::isDirectory)
+                                          .filter(RequestByAlias::hasImages)
+                                          .map(FileEntry::path)
+                                          .map(Path::toUri)
+                                          .map(URI::toString)
+                                          .map(s -> s.replace(target, replacement))
+                                          .toList();
             return jsonResponse(list);
         }
         return notFound();
@@ -146,10 +144,10 @@ class RequestByAlias extends RequestBase {
             // relative ...
             final String target = entry.path().toUri().toString(); // absolute: basePath.toUri().toString();
             final String replacement = "";                         // absolute: serviceUri.toString();
-            final var stage = STREAMER.stream(entry) //.parallel()
-                                      .map(FileEntry::resolved)
-                                      .filter(FileEntry::isRegularFile)
-                                      .filter(ImageType::isMatching);
+            final var stage = Styx.stream(entry) //.parallel()
+                                  .map(FileEntry::resolved)
+                                  .filter(FileEntry::isRegularFile)
+                                  .filter(ImageType::isMatching);
             //noinspection DataFlowIssue
             final var list = Optional.ofNullable(order())
                                      .map(stage::sorted)
@@ -180,42 +178,33 @@ class RequestByAlias extends RequestBase {
     }
 
     private AliasMap.Entry entry() {
-        return features.get(Key.ENTRY);
+        return features.get(Key.ENTRY, () -> aliasMap.get(alias));
     }
 
     private Path resourcePath() {
-        return features.get(Key.RESOURCE_PATH);
+        return features.get(Key.RESOURCE_PATH,
+                            () -> Key.resourcePath(entry().path(),
+                                                   Key.relativeUri(httpRequest().getRequestURI(),
+                                                                   Key.baseUri(alias).toString())));
     }
 
     private Comparator<FileEntry> order() {
-        return features.get(Key.ORDER);
+        return features.get(Key.ORDER, () -> Key.order(entry()));
     }
 
     private ImageType imageType() {
-        return features.get(Key.IMAGE_TYPE);
+        return features.get(Key.IMAGE_TYPE, () -> ImageType.of(resourcePath()));
     }
 
-    @FunctionalInterface
-    private interface Key<R> extends LazyFeatures.Key<RequestByAlias, R> {
+    private interface Key<R> extends Features.Key<R> {
 
-        Key<AliasMap.Entry> ENTRY =
-                proxy("ENTRY", rq -> rq.aliasMap.get(rq.alias));
-        Key<Path> RESOURCE_PATH =
-                proxy("RESOURCE_PATH", rq -> resourcePath(rq.entry().path(),
-                                                          relativeUri(rq.httpRequest().getRequestURI(),
-                                                                      baseUri(rq.alias).toString())));
-        Key<ImageType> IMAGE_TYPE =
-                proxy("IMAGE_TYPE", rq -> ImageType.of(rq.resourcePath()));
-        Key<Comparator<FileEntry>> ORDER =
-                proxy("ORDER", rq -> order(rq.entry()));
+        Key<AliasMap.Entry> ENTRY = proxy("ENTRY");
+        Key<Path> RESOURCE_PATH = proxy("RESOURCE_PATH");
+        Key<ImageType> IMAGE_TYPE = proxy("IMAGE_TYPE");
+        Key<Comparator<FileEntry>> ORDER = proxy("ORDER");
 
-        static <R> Key<R> proxy(final String name, final Key<R> backing) {
+        static <R> Key<R> proxy(final String name) {
             return new Key<>() {
-
-                @Override
-                public R init(final RequestByAlias host) {
-                    return backing.init(host);
-                }
 
                 @Override
                 public String toString() {
@@ -243,14 +232,6 @@ class RequestByAlias extends RequestBase {
             return Optional.ofNullable(entry.order())
                            .map(direction::map)
                            .orElse(null);
-        }
-    }
-
-    private class Features extends LazyFeatures<RequestByAlias> {
-
-        @Override
-        protected final RequestByAlias host() {
-            return RequestByAlias.this;
         }
     }
 }

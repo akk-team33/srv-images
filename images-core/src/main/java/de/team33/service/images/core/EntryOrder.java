@@ -1,6 +1,6 @@
 package de.team33.service.images.core;
 
-import de.team33.patterns.io.adrastea.FileEntry;
+import de.team33.patterns.files.pluto.FileEntry;
 
 import java.nio.file.Path;
 import java.util.Comparator;

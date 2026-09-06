@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>de.team33.patterns</groupId>
-            <artifactId>io-adrastea</artifactId>
+            <artifactId>files-pluto</artifactId>
         </dependency>
 
         <dependency>
