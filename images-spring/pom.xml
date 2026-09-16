@@ -16,7 +16,6 @@
     <description>A microservice that makes images from the filesystem available via http - fat jar module.</description>
 
     <properties>
-        <java.version>17</java.version>
         <spring.boot.version>3.5.13</spring.boot.version>
     </properties>
 

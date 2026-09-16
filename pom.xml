@@ -46,6 +46,7 @@
     <modules>
         <module>images-core</module>
         <module>images-spring</module>
+        <module>images-micronaut</module>
     </modules>
 
     <dependencyManagement>
